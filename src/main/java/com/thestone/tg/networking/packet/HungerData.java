@@ -13,10 +13,8 @@ public record HungerData (int oldValue, int newValue) implements CustomPacketPay
     public static final StreamCodec<ByteBuf, HungerData> STREAM_CODEC = StreamCodec.composite(
             ByteBufCodecs.VAR_INT,
             HungerData::oldValue,
-
             ByteBufCodecs.VAR_INT,
             HungerData::newValue,
-
             HungerData::new
     );
 
