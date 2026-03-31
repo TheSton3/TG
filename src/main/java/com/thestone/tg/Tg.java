@@ -1,6 +1,7 @@
 package com.thestone.tg;
 
 import com.thestone.tg.core.ModAttachments;
+import com.thestone.tg.core.ModItems;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -25,6 +26,7 @@ public class Tg {
         NeoForge.EVENT_BUS.register(this);
         modContainer.registerConfig(ModConfig.Type.COMMON, Config.SPEC);
         ModAttachments.init(modEventBus);
+        ModItems.init(modEventBus);
     }
 
     private void commonSetup(final FMLCommonSetupEvent event) {

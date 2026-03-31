@@ -1,6 +1,7 @@
-package com.thestone.tg.networking.packet;
+package com.thestone.tg.networking;
 
 import com.thestone.tg.core.ModAttachments;
+import com.thestone.tg.networking.packet.HungerData;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 // Handle packets FROM the Server TO the Client
 public class ServerPayloadHandler {

@@ -4,7 +4,7 @@ import com.thestone.tg.Tg;
 import com.thestone.tg.core.ModAttachments;
 import com.thestone.tg.ghoulhunger.HungerHandler;
 import com.thestone.tg.networking.packet.HungerData;
-import com.thestone.tg.networking.packet.ServerPayloadHandler;
+import com.thestone.tg.networking.ServerPayloadHandler;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.neoforged.bus.api.SubscribeEvent;
