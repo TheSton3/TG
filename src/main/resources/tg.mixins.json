@@ -4,7 +4,8 @@
   "package": "com.thestone.tg.mixin",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
-    "GuiHungerMixin"
+    "GuiHungerMixin",
+
   ],
   "client": [
   ],

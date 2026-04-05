@@ -15,12 +15,14 @@ public class ModAttachments {
             DeferredRegister.create(NeoForgeRegistries.ATTACHMENT_TYPES, Tg.MOD_ID);
 
 
-    public static final Supplier<AttachmentType<GhoulPlayer>> GHOUL_PLAYER = ATTACHMENT_TYPES.register(
-            "ghoul_player",
-            () -> AttachmentType.builder(GhoulPlayer::empty)
-                    .serialize(GhoulPlayer.CODEC)
-                    .build()
-    );
+    public static final Supplier<AttachmentType<GhoulPlayer>> GHOUL_PLAYER =
+            ATTACHMENT_TYPES.register("ghoul_player", () ->
+                    AttachmentType.builder(GhoulPlayer::create)
+                            .serialize(GhoulPlayer.CODEC)
+                            .copyOnDeath()
+                            .build()
+            );
+
     public static void init(IEventBus bus) {
         ATTACHMENT_TYPES.register(bus);
     }

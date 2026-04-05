@@ -24,7 +24,7 @@ public class Tg {
     public Tg(IEventBus modEventBus, ModContainer modContainer) {
         modEventBus.addListener(this::commonSetup);
         NeoForge.EVENT_BUS.register(this);
-        modContainer.registerConfig(ModConfig.Type.COMMON, Config.SPEC);
+        modContainer.registerConfig(ModConfig.Type.COMMON, Config.COMMON_SPEC);
         ModAttachments.init(modEventBus);
         ModItems.init(modEventBus);
     }

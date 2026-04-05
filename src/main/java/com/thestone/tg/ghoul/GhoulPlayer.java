@@ -2,58 +2,58 @@ package com.thestone.tg.ghoul;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import com.thestone.tg.core.ModAttachments;
+import com.thestone.tg.networking.packet.GhoulSyncPayload;
+import net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket;
+import net.minecraft.world.entity.player.Player;
+import net.neoforged.neoforge.attachment.IAttachmentHolder;
 
-public class GhoulPlayer {
+public class GhoulPlayer  {
+
+    public static final Codec<GhoulPlayer> CODEC = RecordCodecBuilder.create(instance ->
+            instance.group(
+                    Codec.BOOL.fieldOf("isGhoul").forGetter(GhoulPlayer::isGhoul),
+                    GhoulHunger.CODEC.fieldOf("hunger").forGetter(GhoulPlayer::getHunger)
+            ).apply(instance, GhoulPlayer::new)
+    );
+
     private boolean isGhoul;
-    private GhoulHungerStats hungerStats;
-    private long transformationTime;
-    public GhoulPlayer() {
-        this(false, new GhoulHungerStats(), 0L);
-    }
+    private GhoulHunger hunger;
 
-    public GhoulPlayer(boolean isGhoul, GhoulHungerStats hungerStats, long transformationTime) {
+    // Конструктор ТОЛЬКО для Codec
+    private GhoulPlayer(boolean isGhoul, GhoulHunger hunger) {
         this.isGhoul = isGhoul;
-        this.hungerStats = hungerStats;
-        this.transformationTime = transformationTime;
+        this.hunger = hunger;
     }
 
-    public static final Codec<GhoulPlayer> CODEC = RecordCodecBuilder.create(inst -> inst.group(
-            Codec.BOOL.fieldOf("is_ghoul").forGetter(GhoulPlayer::isGhoul),
-            GhoulHungerStats.CODEC.fieldOf("hunger").forGetter(GhoulPlayer::getHungerStats),
-            Codec.LONG.fieldOf("transform_time").forGetter(GhoulPlayer::getTransformationTime)
-    ).apply(inst, GhoulPlayer::new));
+    // Фабрика для НОВЫХ игроков (вызывается 1 раз при первом запуске мода)
+    public static GhoulPlayer create(IAttachmentHolder holder) {
+        if (!(holder instanceof Player player)) throw new IllegalArgumentException("Expected Player");
+        return new GhoulPlayer(false, GhoulHunger.create(player));
+    }
 
-    public static GhoulPlayer empty() { return new GhoulPlayer(); }
+    public static GhoulPlayer get(Player player) {
+        return player.getData(ModAttachments.GHOUL_PLAYER);
+    }
 
+    public boolean isGhoul() { return isGhoul; }
+    public void setGhoul(boolean ghoul) { this.isGhoul = ghoul; }
+    public GhoulHunger getHunger() { return hunger; }
 
-    public void becomeGhoul(long worldTime) {
-        if (!this.isGhoul) {
-            this.isGhoul = true;
-            this.hungerStats = new GhoulHungerStats(); // сброс голода при превращении
-            this.transformationTime = worldTime;
+    public boolean onUpdate(Player player) {
+        if (player.level().isClientSide) return false;
+        if (isGhoul) return hunger.onUpdate(player);
+        return false;
+    }
+
+    public void syncToClient(Player player) {
+        if (player instanceof net.minecraft.server.level.ServerPlayer sp) {
+            sp.connection.send(new ClientboundCustomPayloadPacket(
+                    new GhoulSyncPayload(
+                            sp.getId(), isGhoul,
+                            hunger.getHungerLevel(), hunger.getMaxHunger(), hunger.getSaturation()
+                    )
+            ));
         }
     }
-
-
-    public void tick(long worldTime) {
-        if (this.isGhoul) {
-            this.hungerStats.tick(worldTime);
-        }
-    }
-
-
-    public boolean tryEat(float nutrition) {
-        if (!this.isGhoul) return false;
-        this.hungerStats.addSatiation(nutrition);
-        return true;
-    }
-
-    public boolean isStarving() { return this.isGhoul && this.hungerStats.isStarving(); }
-    public float getHungerPercent() { return this.isGhoul ? this.hungerStats.getHungerPercent() : 0f; }
-
-
-    public  boolean isGhoul() { return isGhoul; }
-    public GhoulHungerStats getHungerStats() { return hungerStats; }
-    public long getTransformationTime() { return transformationTime; }
-
 }
