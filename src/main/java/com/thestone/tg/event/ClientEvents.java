@@ -2,6 +2,7 @@ package com.thestone.tg.event;
 
 import com.thestone.tg.Tg;
 import com.thestone.tg.core.ModAttachments;
+import com.thestone.tg.ghoul.GhoulPlayer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.api.distmarker.Dist;
@@ -18,18 +19,22 @@ public class ClientEvents {
                 (guiGraphics, deltaTracker) -> {
                     int x = guiGraphics.guiWidth() / 2;
                     int y = guiGraphics.guiHeight();
-
-                    if(!Minecraft.getInstance().player.isCreative() && Minecraft.getInstance().player.hasData(ModAttachments.GHOUL_HUNGER)) {
+                    GhoulPlayer ghoulData = Minecraft.getInstance().player.getData(ModAttachments.GHOUL_PLAYER);
+                    float hunger = ghoulData.getHungerStats().getHungerLevel();
+                    if(ghoulData.isGhoul()) {
                         for(int i = 0; i < 10; i++) {
                             guiGraphics.blitSprite(ResourceLocation.fromNamespaceAndPath(Tg.MOD_ID, "empty_hunger_icon"),
                                     12, 12, 0, 0, x + i * 9 , y - 41, 12, 12);
                         }
 
-                        for(int i = 0; i < Minecraft.getInstance().player.getData(ModAttachments.GHOUL_HUNGER); i++) {
+                        for(int i = 0; i < hunger; i++) {
                             guiGraphics.blitSprite(ResourceLocation.fromNamespaceAndPath(Tg.MOD_ID, "hunger_icon"),
                                     12, 12, 0, 0, x + i * 9, y - 41, 12, 12);
                         }
                     }
                 });
     }
+
+
+
 }
