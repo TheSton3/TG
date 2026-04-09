@@ -48,19 +48,11 @@ public record GhoulFeedPayload(int targetEntityId) implements CustomPacketPayloa
             if (isOnCooldown(feeder)) {
                 return;
             }
-
-            // Проверка: голод не полный
-            var hunger = ghoul.getHunger();
-            if (hunger.getHungerLevel() >= hunger.getMaxHunger()) {
-                return;
-            }
-
             // Получаем цель
             Entity target = feeder.level().getEntity(payload.targetEntityId());
             if (!(target instanceof LivingEntity livingTarget) || !isValidTarget(livingTarget, feeder)) {
                 return;
             }
-
             // Выполняем питание
             if (performFeed(feeder, livingTarget)) {
                 setCooldown(feeder);
@@ -68,7 +60,7 @@ public record GhoulFeedPayload(int targetEntityId) implements CustomPacketPayloa
         });
     }
 
-    private static boolean isValidTarget(LivingEntity target, Player feeder) {
+    public static boolean isValidTarget(LivingEntity target, Player feeder) {
         // Игрок-жертва
         if (target instanceof Player victim) {
             // if (!GhoulFeedingConfig.CAN_FEED_ON_PLAYERS.get()) return false;
@@ -100,25 +92,10 @@ public record GhoulFeedPayload(int targetEntityId) implements CustomPacketPayloa
         if (!hurt) {
             return false;
         }
-
         // Восстанавливаем голод гуля
         GhoulPlayer ghoul = GhoulPlayer.get(feeder);
         ghoul.getHunger().addFood((int) hungerRestore, 1.0f);
         ghoul.syncToClient(feeder);
-
-        // Эффекты
-        var level = feeder.level();
-        level.playSound(null, victim.getX(), victim.getY(), victim.getZ(),
-                SoundEvents.GENERIC_HURT, SoundSource.PLAYERS, 0.8f, 1.0f);
-
-        for (int i = 0; i < 8; i++) {
-            level.addParticle(ParticleTypes.DAMAGE_INDICATOR,
-                    victim.getX() + (level.random.nextDouble() - 0.5) * 0.5,
-                    victim.getY() + 1.0 + level.random.nextDouble() * 0.5,
-                    victim.getZ() + (level.random.nextDouble() - 0.5) * 0.5,
-                    0.0, 0.1, 0.0);
-        }
-
         return true;
     }
 

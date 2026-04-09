@@ -13,6 +13,11 @@ public class ModKeymappings {
             InputConstants.Type.KEYSYM,
             GLFW.GLFW_KEY_G,
             "key.categories.tg");
+    private static final KeyMapping KEY_MAPPING_KAGUNE = new KeyMapping("key.tg.kagune",
+            InputConstants.Type.KEYSYM,
+            GLFW.GLFW_KEY_K,
+            "key.categories.tg");
 
     public static final Lazy<KeyMapping> PRESS_FEED = Lazy.of(() -> KEY_MAPPING_FEED);
+    public static final Lazy<KeyMapping> PRESS_KAGUNE = Lazy.of(() -> KEY_MAPPING_KAGUNE);
 }

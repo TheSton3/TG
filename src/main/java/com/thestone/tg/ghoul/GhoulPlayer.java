@@ -5,6 +5,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.thestone.tg.core.ModAttachments;
 import com.thestone.tg.networking.packet.GhoulSyncPayload;
 import net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.neoforged.neoforge.attachment.IAttachmentHolder;
 
@@ -20,13 +21,11 @@ public class GhoulPlayer  {
     private boolean isGhoul;
     private GhoulHunger hunger;
 
-    // Конструктор ТОЛЬКО для Codec
     private GhoulPlayer(boolean isGhoul, GhoulHunger hunger) {
         this.isGhoul = isGhoul;
         this.hunger = hunger;
     }
 
-    // Фабрика для НОВЫХ игроков (вызывается 1 раз при первом запуске мода)
     public static GhoulPlayer create(IAttachmentHolder holder) {
         if (!(holder instanceof Player player)) throw new IllegalArgumentException("Expected Player");
         return new GhoulPlayer(false, GhoulHunger.create(player));
@@ -47,7 +46,7 @@ public class GhoulPlayer  {
     }
 
     public void syncToClient(Player player) {
-        if (player instanceof net.minecraft.server.level.ServerPlayer sp) {
+        if (player instanceof ServerPlayer sp) {
             sp.connection.send(new ClientboundCustomPayloadPacket(
                     new GhoulSyncPayload(
                             sp.getId(), isGhoul,

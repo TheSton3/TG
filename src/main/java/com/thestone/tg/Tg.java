@@ -2,6 +2,9 @@ package com.thestone.tg;
 
 import com.thestone.tg.core.ModAttachments;
 import com.thestone.tg.core.ModItems;
+import com.thestone.tg.item.armor.RinkakuKagune;
+import net.minecraft.client.renderer.entity.EntityRenderers;
+import net.minecraft.world.item.Item;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -13,6 +16,7 @@ import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.server.ServerStartingEvent;
+import top.theillusivec4.curios.api.CuriosApi;
 
 
 @Mod(Tg.MOD_ID)
@@ -30,6 +34,7 @@ public class Tg {
     }
 
     private void commonSetup(final FMLCommonSetupEvent event) {
+
     }
 
 

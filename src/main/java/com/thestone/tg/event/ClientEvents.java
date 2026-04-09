@@ -1,13 +1,18 @@
 package com.thestone.tg.event;
 
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.thestone.tg.Tg;
 import com.thestone.tg.core.ModAttachments;
 import com.thestone.tg.core.ModKeymappings;
 import com.thestone.tg.ghoul.GhoulHunger;
 import com.thestone.tg.ghoul.GhoulPlayer;
+import com.thestone.tg.item.armor.RinkakuKagune;
 import com.thestone.tg.networking.packet.GhoulFeedPayload;
 import net.minecraft.client.Minecraft;
-import net.minecraft.network.protocol.common.ServerboundCustomPayloadPacket;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -17,10 +22,10 @@ import net.minecraft.world.phys.HitResult;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.client.event.InputEvent;
-import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent;
-import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
+import net.neoforged.neoforge.client.event.*;
 import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
+import net.neoforged.neoforge.network.PacketDistributor;
+
 
 @EventBusSubscriber(modid = Tg.MOD_ID, value = Dist.CLIENT)
 public class ClientEvents {
@@ -43,15 +48,40 @@ public class ClientEvents {
             }
         });
     }
+
     @SubscribeEvent
-    public static void registerKeybind(RegisterKeyMappingsEvent event){
-        event.register(ModKeymappings.PRESS_FEED.get());
+    public static void registerFeedIndicator(RegisterGuiLayersEvent event) {
+        event.registerAbove(VanillaGuiLayers.CROSSHAIR, ResourceLocation.fromNamespaceAndPath(Tg.MOD_ID, "ghoul_feed"), (guiGraphics, deltaTracker) -> {
+            int x = guiGraphics.guiWidth() / 2;
+            int y = guiGraphics.guiHeight() / 2;
+            Minecraft mc = Minecraft.getInstance();
+            Player player = mc.player;
+            if (mc.hitResult instanceof EntityHitResult ehr) {
+                Entity target = ehr.getEntity();
+                if (GhoulPlayer.get(player).isGhoul()) {
+                    if (target instanceof LivingEntity le) {
+                        if (GhoulFeedPayload.isValidTarget(le, player)) {
+                            guiGraphics.blitSprite(ResourceLocation.fromNamespaceAndPath(Tg.MOD_ID, "feed_icon"), 16, 16, 0, 0, x, y, 16, 16);
+                        }
+                    }
+                }
+            }
+        });
     }
+
+    @SubscribeEvent
+    public static void registerKeybind(RegisterKeyMappingsEvent event) {
+        event.register(ModKeymappings.PRESS_FEED.get());
+        event.register(ModKeymappings.PRESS_KAGUNE.get());
+    }
+
     @SubscribeEvent
     public static void onKeyInput(InputEvent.Key event) {
         Minecraft mc = Minecraft.getInstance();
         if (mc.player == null || mc.level == null) return;
-
+        while (ModKeymappings.PRESS_KAGUNE.get().consumeClick()){
+            RinkakuKagune.toggleKagune(mc.player);
+        }
         // Проверяем нажатие keybind
         while (ModKeymappings.PRESS_FEED.get().consumeClick()) {
             // Проверяем, смотрит ли игрок на валидную цель
@@ -60,18 +90,11 @@ public class ClientEvents {
 
                 // Отправляем пакет только если цель — сущность
                 if (target instanceof LivingEntity) {
-                    sendFeedPacket(target.getId());
+                    PacketDistributor.sendToServer(new GhoulFeedPayload(target.getId()));
                 }
             }
         }
     }
 
-    private static void sendFeedPacket(int targetId) {
-        var packet = new GhoulFeedPayload(targetId);
-        // Отправка через NeoForge networking
-        Minecraft.getInstance().getConnection().send(
-                new ServerboundCustomPayloadPacket(packet)
-        );
-    }
 
 }
